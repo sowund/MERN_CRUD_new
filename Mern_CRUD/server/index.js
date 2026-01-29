@@ -42,7 +42,7 @@ app.delete("/:id",async(req,res)=>{
     res.json({message:"Person deleted"});
 });
 
-const PORT =process.env.PORT || 50000;
+const PORT =process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log("Server is running on http://localhost:5000");
 })
