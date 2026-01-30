@@ -1,76 +1,90 @@
-import axios from 'axios';
-import { useEffect, useState } from 'react';
 import './App.css';
-
-const  API = process.env.REACT_APP_API_URL || "http://localhost:5000";
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+const API = process.env.REACT_APP_API_URL || "http://localhost:4000";
 
 function App() {
-  //State to store the value from database
-  const [people,setpeople]=useState([]);
-  const [form,setForm]=useState({name:"", age:""});
-  const[editId,setEditId]=useState(null);
+  const [people, setPeople] = useState([]);
+  const [name, setName] = useState("");
+  const [age, setAge] = useState(0);
+  const[id,setId]=useState(null);
 
   //Read from database
-  useEffect(()=>{
-    loadpeople();
-  },[]);
-   
-  const loadpeople = async()=>{
-    const res= await axios.get(API);
-    setpeople(res.data);
-  };
+  useEffect(() => {
+    loadPeople();
+  }, []);
 
-  //Create person
-  const addPerson =async()=>{
-    if(!form.name ||!form.age)
-      return alert("Please fill all fields");
-    const res =await axios.post(API,{name:form.name, age: Number(form.age)});
-    setpeople([...people,res.data]);
-    setForm({name:"",age:""});
+  //Will load the datas which is currently in the setPeople state
+  const loadPeople = async () => {
+    const res = await axios.get(API);
+    setPeople(res.data);
   }
 
-  //Start Edit Function
-  const startEdit=(p)=>{
-    setEditId(p._id);
-    setForm({name:p.name,age:p.age})
-  };
+  //To add new post
+  const addPost = async () => {
+    if (!name || !age) {
+      alert("Enter both name and age");
+      return;
+    }
+    const res = await axios.post(API, { name, age });
+    setPeople([...people, res.data]);
+    setName("");
+    setAge(0);
+  }
 
-  //Update Function
-  const updatePerson= async()=>{
-    const res= await axios.put(`${API}/${editId}`,form);
-    setpeople(people.map(p=>(p._id===editId ? res.data:p)));
-    setEditId(null);
-    setForm({name:"",age:""});  
-  };
+  // Edit functionality to be implemented
+  const editPost = async (post) => {
+    setId(post._id);
+    setName(post.name);
+    setAge(post.age);
+  }
 
-  //Delete Function
-  const deletePerson = async(id)=>{
+  //To update the person
+  const updatePerson = async () => {
+    const res = await axios.put(`${API}/${id}`, { name, age })
+    setPeople(people.map(p => (p._id === id ? res.data : p)));
+    setId(null);
+    setName("");
+    setAge(0);
+  }
+
+  //To delete a person
+  const deletePost = async (id) => {
     await axios.delete(`${API}/${id}`);
-    setpeople(people.filter(p=> p._id!==id));
+    setPeople(people.filter(p=>p._id!==id));
+    // await loadPeople();
   }
 
+  const cancelEdit = () => {
+    setId(null);
+    setName("");
+    setAge(0);
+  }
   return (
     <div>
       <h3>MERN Stack CRUD-Application</h3>
-      <input type='text' placeholder='Enter Name' value={form.name} onChange={e=> setForm({...form,name:e.target.value})}/>
-      <input type='text' placeholder='Enter Age' value={form.age} onChange={e=> setForm({...form,age:e.target.value})}/>
-      {editId?(
-         <button onClick={updatePerson}>Update</button>
-      ):(
-         <button onClick={addPerson}>Add</button>
-      )
+      {people.map(p => (
+          <div key={p._id}>
+          <b>{p.name}</b> - {p.age} 
+          <button onClick={() => editPost(p)}>Edit</button>
+          <button onClick={() => deletePost(p._id)}>Delete</button>
+            </div>
+        ))}
+        <input type="text" placeholder="Name" value={name} onChange={e => setName(e.target.value)} />
+        <input type="number" placeholder="Age" value={age} onChange={e => setAge(e.target.value)} />
+      {
+        id ?
+          (
+            <div>
+              <button onClick={updatePerson}>Update</button>
+              <button onClick={cancelEdit}>Cancel</button>
+              </div>
+          ) : (
+            <button onClick={addPost}>Add Person</button>
+         )
       }
-      <hr/>
-      {people.map(p=>(
-        <div key={p._id}>
-          <b>{p.name}</b>-{p.age}
-          <button onClick={()=> startEdit(p)}>Edit</button>
-          <button onClick={()=> deletePerson(p._id)}>Delete</button>
-        </div>
-      ))}
-      
+        
     </div>
-   
   );
 }
 

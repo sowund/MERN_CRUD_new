@@ -41,8 +41,7 @@ app.delete("/:id",async(req,res)=>{
     await Person.findByIdAndDelete(req.params.id);
     res.json({message:"Person deleted"});
 });
-
-const PORT =process.env.PORT || 5000;
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-    console.log("Server is running on http://localhost:5000");
+    console.log("Server is running on http://localhost:4000");
 })
